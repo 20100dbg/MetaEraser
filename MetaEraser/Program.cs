@@ -16,7 +16,7 @@ namespace MetaEraser
     class Program
     {
 
-        static List<String> supportedExt = new List<String> { ".pptx", ".docx", ".xlsx", ".xlsm" };
+        static List<String> supportedExt = new List<String> { ".docx", ".docm", ".xlsx", ".xlsm", ".pptx", ".pptm" };
         static String pathIn = "in/";
         static String pathOut = "out/";
 
@@ -37,7 +37,21 @@ namespace MetaEraser
                 return;
             }
 
+            Console.WriteLine("MetaEraser va traiter les fichiers dans le dossier in");
+            Console.WriteLine("L'original sera conservé dans le dossier in, les fichiers traités sont dans le dossier out");
+            Console.WriteLine("Tapez exit ou quit pour ne pas traiter les fichiers");
+            String input = Console.ReadLine();
 
+            if (input.ToLower() != "exit"  && input.ToLower() != "quit")
+                cleanAll();
+
+
+            Console.WriteLine("[+] Finished. Everything is in " + pathOut);
+            Console.Read();
+        }
+
+        static void cleanAll()
+        {
             String[] files = Directory.GetFiles(pathIn);
 
             for (int i = 0, n = files.Length; i < n; i++)
@@ -45,26 +59,18 @@ namespace MetaEraser
                 String filename = Path.GetFileName(files[i]);
                 String ext = Path.GetExtension(files[i]).ToLower();
 
-                if (supportedExt.Contains(ext))
-                {
-                    Console.WriteLine("[+] Process " + filename);
-                    cleanOOXML(pathIn, filename);
-                }
-                else if (ext == ".pdf")
-                {
-                    Console.WriteLine("[+] Process " + filename);
-                    cleanPdf(pathIn, filename);
-                }
+                if (supportedExt.Contains(ext)) cleanOOXML(pathIn, filename);
+                else if (ext == ".pdf") cleanPdf(pathIn, filename);
                 else
                 {
-                    Console.WriteLine("[-] Ignore " + filename);
+                    System.IO.File.Copy(pathIn + filename, pathOut + filename, true);
+                    //Console.WriteLine("[-] Ignore " + filename);
                 }
+                Console.WriteLine("[+] Process " + filename);
             }
 
-            Console.WriteLine("[+] Finished. Everything is in " + pathOut);
-            Console.Read();
+            System.Diagnostics.Process.Start(Directory.GetCurrentDirectory() + "\\exiftool.exe", "-overwrite_original -all= out/*.*");
         }
-
 
 
         static void cleanPdf(String path, String filename)
